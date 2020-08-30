@@ -11,55 +11,59 @@ services:
     ports:
       - 80:80
       - 443:443
-    
+      - 9090:9090
+    labels:
+      # Dashboard
+      - traefik.enable=true
+      - traefik.http.routers.traefik.rule=Host(`monitor.devops-test.ru`)
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.middlewares=admin
+      - traefik.http.routers.traefik.tls.certresolver=default
+      - traefik.http.routers.traefik.entrypoints=secure
+      - traefik.http.middlewares.admin.basicauth.users=admin:$$apr1$$CCrW2yx7$$M49EG0SKai3t5G8N..g631
+           
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./data/traefik.yml:/traefik.yml:ro
+      - ./data/traefik.toml:/etc/traefik/traefik.toml:ro
       - ./data/acme.json:/acme.json    
-    labels:
-      - traefik.enable=true
-      - traefik.frontend.rule=Host:monitor.devops-test.ru
-      - traefik.port=9090
     networks:
       - web
 
   site1:
     image: nginx:alpine
     restart: always
-
     labels:
-      - traefik.backend=site1
-      - traefik.frontend.rule=Host:site1.devops-test.ru
+      - traefik.enable=true
       - traefik.docker.network=web
-      - traefik.port=80
-
+      - traefik.http.routers.site1.rule=Host(`site1.devops-test.ru`)
+      - traefik.http.routers.site1.entrypoints=insecure, secure
+      - traefik.http.routers.site1.tls.certresolver=default
+     
     volumes:
-      - ./site1/hosts:/etc/nginx/conf.d
-      - ./site1/www:/var/www
+      - ./site1/www:/usr/share/nginx/html
       - ./site1/logs:/var/log/nginx
     networks:
       - web
     depends_on:
       - traefik
 
+
   site2:
     image: nginx:alpine
     restart: always
 
     labels:
-      - traefik.backend=site2
-      - traefik.frontend.rule=Host:site2.devops-test.ru
+      - traefik.enable=true
       - traefik.docker.network=web
-      - traefik.port=80
-
+      - traefik.http.routers.site2.rule=Host(`site2.devops-test.ru`)
+      - traefik.http.routers.site2.entrypoints=insecure, secure
+      - traefik.http.routers.site2.tls.certresolver=default
+ 
     volumes:
-      - ./site2/hosts:/etc/nginx/conf.d
-      - ./site2/www:/var/www
+      - ./site2/www:/usr/share/nginx/html
       - ./site2/logs:/var/log/nginx
     networks:
       - web
     depends_on:
       - traefik
-
-

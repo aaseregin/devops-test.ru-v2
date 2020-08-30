@@ -1,0 +1,27 @@
+[global]
+  checkNewVersion = true
+  sendAnonymousUsage = true
+
+[entryPoints]
+  [entryPoints.insecure]
+    address = ":80"
+  [entryPoints.secure]
+    address = ":443"
+
+[api]
+
+[providers]
+  [providers.docker]
+    endpoint = "unix:///var/run/docker.sock"
+    exposedByDefault = false
+
+[log]
+  level = "WARNING"
+
+[certificatesResolvers]
+  [certificatesResolvers.default]
+    [certificatesResolvers.default.acme]
+      email = "a.a.seregin@yandex.ru"
+      storage = "acme.json"
+      [certificatesResolvers.default.acme.httpChallenge]
+        entryPoint = "insecure"
